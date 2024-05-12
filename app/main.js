@@ -1,51 +1,5 @@
 const process = require("process");
-
-function decodeStringBenCode(bencodedValue) {
-  // Check if the first character is a digit
-  if (!isNaN(bencodedValue[0])) {
-    const firstColonIndex = bencodedValue.indexOf(":");
-    if (firstColonIndex === -1) {
-      throw new Error("Invalid encoded value");
-    }
-    return bencodedValue.substr(firstColonIndex + 1);
-  } else {
-    throw new Error("Only strings are supported at the moment");
-  }
-}
-
-
-
-/**
- * Decodes a bencoded integer value.
- *
- * @param {string} bencodedValue 
- * @returns {number} - The decoded integer value.
- * @throws {Error} - If the bencoded value is not a valid integer.
- * Example: decodeIntBenCode('i52e') => 52
- * Example: decodeIntBenCode('i-52e') => -52
- */
-function decodeIntBenCode(bencodedValue) {
-  // Check if the first character is a digit
-  const firstEIndex = bencodedValue.indexOf("e");
-  if (firstEIndex === -1) {
-    throw new Error("Invalid encoded value");
-  }
-  return parseInt(bencodedValue.substr(1, firstEIndex - 1));
-}
-
-
-// Examples:
-// - decodeBencode("5:hello") -> "hello"
-// - decodeBencode("10:hello12345") -> "hello12345"
-function decodeBencode(bencodedValue) {
-  if (bencodedValue[0] === "i") {
-    return decodeIntBenCode(bencodedValue);
-  } // As String are of format "length:value"
-  else if (bencodedValue.indexOf(":") !== -1) {
-    return decodeStringBenCode(bencodedValue);
-  }
-}
-
+const decode = require("./parser");
 function main() {
   const command = process.argv[2];
 
@@ -55,12 +9,10 @@ function main() {
   // Uncomment this block to pass the first stage
   if (command === "decode") {
     const bencodedValue = process.argv[3];
-    // In JavaScript, there's no need to manually convert bytes to string for printing
-    // because JS doesn't distinguish between bytes and strings in the same way Python does.
-    console.log(JSON.stringify(decodeBencode(bencodedValue)));
+    return decode(bencodedValue);
   } else {
     throw new Error(`Unknown command ${command}`);
   }
 }
 
-main();
+console.log(JSON.stringify(main()));
