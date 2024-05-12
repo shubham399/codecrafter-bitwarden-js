@@ -7,9 +7,9 @@ function main() {
   function printTorrentInfo(torrentInfo) {
     const trackerUrl = torrentInfo.announce;
     const fileLength = torrentInfo.info.length;
-    const infoEncoded = encode(torrentInfo.info);
-
-    console.debug("🚀  file: main.js:12  printTorrentInfo  infoEncoded:", infoEncoded);
+    const infoEncoded = encode(torrentInfo.info).toString('utf-8');
+    // console.log(torrentInfo.info);
+    // console.log(infoEncoded);
 
     const infoHash = crypto.createHash('sha1').update(infoEncoded).digest('hex');;
     console.log(`Tracker URL: ${trackerUrl}`);
@@ -26,15 +26,15 @@ function main() {
     const bencodedValue = process.argv[3];
     const result = decode(bencodedValue);
     if (result) {
-      console.log(JSON.stringify(result.value));
+      console.log(JSON.stringify(result[0]));
     }
   }
   else if (command === "info") {
     const torrentFile = process.argv[3];
     const fs = require('fs');
-    const bencodedData = fs.readFileSync(torrentFile, { encoding: 'binary' });
-    const { value: torrentInfo } = decode(bencodedData, 0);
-    printTorrentInfo(torrentInfo);
+    const bencodedData = fs.readFileSync(torrentFile);
+    const data = decode(bencodedData.toString('binary'));
+    printTorrentInfo(data[0]);
   }
   else {
     throw new Error(`Unknown command ${command}`);
