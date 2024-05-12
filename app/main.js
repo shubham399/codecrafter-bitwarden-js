@@ -9,7 +9,10 @@ function main() {
   // Uncomment this block to pass the first stage
   if (command === "decode") {
     const bencodedValue = process.argv[3];
-    return decode(bencodedValue);
+    const result =  decode(bencodedValue);
+    if(result){
+      return result.value;
+    }
   } else {
     throw new Error(`Unknown command ${command}`);
   }

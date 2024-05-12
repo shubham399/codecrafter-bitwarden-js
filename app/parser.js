@@ -1,4 +1,6 @@
-module.exports = function decode(val) {
+module.exports = decode;
+
+function decode(val) {
     if (isInteger(val)) {
         return decodeInteger(val);
     }
@@ -6,7 +8,10 @@ module.exports = function decode(val) {
         return decodeString(val);
     }
     if (isList(val)) {
-        return decodeList(val)[0];
+        return decodeList(val);
+    }
+    if (isDictionary(val)) {
+        return decodeDict(val);
     }
     throw new Error("Invalid encoded value: " + val);
 }
@@ -15,47 +20,69 @@ function isInteger(val) {
     return val[0] === "i" && val.at(-1) === "e";
 }
 
-function decodeInteger(val) {
-    return parseInt(val.slice(1, val.length - 1));
+function decodeInteger(bencodedValue) {
+    const endIndex = bencodedValue.indexOf("e");
+    if (endIndex === -1) {
+        throw new Error("Invalid encoded value");
+    }
+    return {
+        origin: bencodedValue.substr(0, endIndex + 1),
+        value: parseInt(bencodedValue.slice(1, endIndex)),
+    };
 }
 function isString(val) {
     return !isNaN(val[0]);
 }
-function decodeString(val) {
-    const colonIdx = val.indexOf(":");
-    if (colonIdx === -1) {
-        throw new Error("Invalid encoded value: string");
-    }
-    const strLength = Number(val.slice(0, colonIdx));
-    return val.slice(colonIdx + 1, strLength + colonIdx + 1);
+function decodeString(bencodedValue) {
+    const firstColonIndex = bencodedValue.indexOf(":");
+
+    const length = parseInt(bencodedValue.slice(0, firstColonIndex));
+    return {
+        origin: bencodedValue.substr(0, firstColonIndex + 1 + length),
+        value: bencodedValue.slice(
+            firstColonIndex + 1,
+            firstColonIndex + 1 + length
+        ),
+    };
 }
 
 function isList(val) {
     return val[0] === "l" && val.at(-1) === "e";
 }
 
-function decodeList(val) {
+function decodeList(bencodedValue) {
     const result = [];
-    let window = val.substr(1);
-
-    while (window.length > 0 && window[0] !== "e") {
-        if (isInteger(window)) {
-            const integer = decodeInteger(window);
-            result.push(integer);
-            window = window.slice(String(integer).length + 2);
-        } else if (isString(window)) {
-            const string = decodeString(window);
-            result.push(string);
-            window = window.slice(String(string.length).length + 1 + string.length);
-        } else if (isList(window)) {
-            const [list, remaining] = decodeList(window);
-            result.push(list);
-            window = remaining;
+    let index = 1;
+    while (bencodedValue[index] !== "e") {
+        const decodeObj = decode(bencodedValue.substr(index));
+        if (decodeObj.value) {
+            result.push(decodeObj.value);
+            index += decodeObj.origin.length;
         }
     }
-    while (window[0] === "e" && window.length > 0) {
-        window = window.substr(1);
-    }
-    return [result, window];
+    return {
+        origin: bencodedValue.substr(0, index + 1),
+        value: result,
+    };
 }
+function isDictionary(val) {
+    return val[0] === "d" && val.at(-1) === "e";
+}
+
+function decodeDict(bencodedValue) {
+    const result = {};
+    let index = 1;
+    while (bencodedValue[index] !== "e") {
+        const keyObj = decode(bencodedValue.substr(index));
+        index += keyObj.origin.length;
+        const valueObj = decode(bencodedValue.substr(index));
+        index += valueObj.origin.length;
+        result[keyObj.value] = valueObj.value;
+    }
+    return {
+        origin: bencodedValue.substr(0, index + 1),
+        value: result,
+    };
+}
+
 
