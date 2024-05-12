@@ -1,10 +1,6 @@
 const process = require("process");
-const util = require("util");
 
-// Examples:
-// - decodeBencode("5:hello") -> "hello"
-// - decodeBencode("10:hello12345") -> "hello12345"
-function decodeBencode(bencodedValue) {
+function decodeStringBenCode(bencodedValue) {
   // Check if the first character is a digit
   if (!isNaN(bencodedValue[0])) {
     const firstColonIndex = bencodedValue.indexOf(":");
@@ -14,6 +10,39 @@ function decodeBencode(bencodedValue) {
     return bencodedValue.substr(firstColonIndex + 1);
   } else {
     throw new Error("Only strings are supported at the moment");
+  }
+}
+
+
+
+/**
+ * Decodes a bencoded integer value.
+ *
+ * @param {string} bencodedValue 
+ * @returns {number} - The decoded integer value.
+ * @throws {Error} - If the bencoded value is not a valid integer.
+ * Example: decodeIntBenCode('i52e') => 52
+ * Example: decodeIntBenCode('i-52e') => -52
+ */
+function decodeIntBenCode(bencodedValue) {
+  // Check if the first character is a digit
+  const firstEIndex = bencodedValue.indexOf("e");
+  if (firstEIndex === -1) {
+    throw new Error("Invalid encoded value");
+  }
+  return parseInt(bencodedValue.substr(1, firstEIndex - 1));
+}
+
+
+// Examples:
+// - decodeBencode("5:hello") -> "hello"
+// - decodeBencode("10:hello12345") -> "hello12345"
+function decodeBencode(bencodedValue) {
+  if (bencodedValue[0] === "i") {
+    return decodeIntBenCode(bencodedValue);
+  } // As String are of format "length:value"
+  else if (bencodedValue.indexOf(":") !== -1) {
+    return decodeStringBenCode(bencodedValue);
   }
 }
 
