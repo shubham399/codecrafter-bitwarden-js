@@ -17,9 +17,6 @@ function main() {
     const fileLength = torrentInfo.info.length;
     const tmpBuff = Buffer.from(encode(torrentInfo.info), "binary");
     const hash = calculateSHA1(tmpBuff);
-    // console.log(torrentInfo.info);
-    // console.log(infoEncoded);
-
     console.log(`Tracker URL: ${trackerUrl}`);
     console.log(`Length: ${fileLength}`);
     console.log(`Info encoded: ${hash}`);
