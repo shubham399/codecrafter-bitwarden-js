@@ -31,9 +31,6 @@ function main() {
     const fs = require('fs');
     const bencodedData = fs.readFileSync(torrentFile, { encoding: 'binary' });
     const { value: torrentInfo } = decode(bencodedData, 0);
-
-    console.debug("🚀  file: main.js:30  main  torrentInfo:", torrentInfo);
-
     printTorrentInfo(torrentInfo);
   }
   else {
