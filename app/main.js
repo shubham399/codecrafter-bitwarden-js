@@ -1,12 +1,17 @@
 const process = require("process");
-const decode = require("./parser");
+const crypto = require("crypto");
+const decode = require("./decode");
+const encode = require("./encode");
 function main() {
   const command = process.argv[2];
   function printTorrentInfo(torrentInfo) {
     const trackerUrl = torrentInfo.announce;
     const fileLength = torrentInfo.info.length;
+    const infoEncoded = encode(torrentInfo.info);
+    const infoHash = crypto.createHash('sha1').update(infoEncoded).digest('hex');;
     console.log(`Tracker URL: ${trackerUrl}`);
     console.log(`Length: ${fileLength}`);
+    console.log(`Info encoded: ${infoHash}`);
   }
 
   // You can use print statements as follows for debugging, they'll be visible when running tests.
@@ -26,6 +31,9 @@ function main() {
     const fs = require('fs');
     const bencodedData = fs.readFileSync(torrentFile, { encoding: 'binary' });
     const { value: torrentInfo } = decode(bencodedData, 0);
+
+    console.debug("🚀  file: main.js:30  main  torrentInfo:", torrentInfo);
+
     printTorrentInfo(torrentInfo);
   }
   else {
