@@ -1,33 +1,14 @@
 const process = require("process");
-const crypto = require("crypto");
 const decode = require("./decode");
 const encode = require("./encode");
-
-function calculateSHA1(inputString) {
-  const sha1Hash = crypto.createHash("sha1");
-  sha1Hash.update(inputString);
-  return sha1Hash.digest("hex");
-}
+const { printTorrentInfo } = require("./torrent");
+const peers = require("./peer");
 
 
-function main() {
+
+async function main() {
   const command = process.argv[2];
-  function printTorrentInfo(torrentInfo) {
-    const trackerUrl = torrentInfo.announce;
-    const fileLength = torrentInfo.info.length;
-    const tmpBuff = Buffer.from(encode(torrentInfo.info), "binary");
-    const hash = calculateSHA1(tmpBuff);
-    const pieceInfo = Buffer.from(torrentInfo.info.pieces, "binary");
 
-    console.log(`Tracker URL: ${trackerUrl}`);
-    console.log(`Length: ${fileLength}`);
-    console.log(`Info Hash: ${hash}`);
-    console.log(`Piece Length: ${torrentInfo.info['piece length']}`)
-    console.log('Piece Hashes:');
-    for (let i = 0; i < pieceInfo.length; i += 20) {
-      console.log(pieceInfo.slice(i, i + 20).toString("hex"));
-    }
-  }
 
   // You can use print statements as follows for debugging, they'll be visible when running tests.
   // console.log("Logs from your program will appear here!");
@@ -43,10 +24,13 @@ function main() {
   }
   else if (command === "info") {
     const torrentFile = process.argv[3];
-    const fs = require('fs');
-    const bencodedData = fs.readFileSync(torrentFile);
-    const data = decode(bencodedData.toString('binary'));
-    printTorrentInfo(data[0]);
+    printTorrentInfo(torrentFile);
+    
+  }
+  else if (command === "peers") {
+    const torrentFile = process.argv[3];
+    const torrentPeers = await peers(torrentFile);
+    console.log(torrentPeers.join("\n"));
   }
   else {
     throw new Error(`Unknown command ${command}`);
