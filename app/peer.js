@@ -1,77 +1,16 @@
 const decode = require("./decode");
 const { info } = require("./torrent");
-function range(n) {
-    return [...new Array(n).keys()];
-}
 
-const UNRESERVED = [
-    "A",
-    "B",
-    "C",
-    "D",
-    "E",
-    "F",
-    "G",
-    "H",
-    "I",
-    "J",
-    "K",
-    "L",
-    "M",
-    "N",
-    "O",
-    "P",
-    "Q",
-    "R",
-    "S",
-    "T",
-    "U",
-    "V",
-    "W",
-    "X",
-    "Y",
-    "Z",
-    "a",
-    "b",
-    "c",
-    "d",
-    "e",
-    "f",
-    "g",
-    "h",
-    "i",
-    "j",
-    "k",
-    "l",
-    "m",
-    "n",
-    "o",
-    "p",
-    "q",
-    "r",
-    "s",
-    "t",
-    "u",
-    "v",
-    "w",
-    "x",
-    "y",
-    "z",
-    "0",
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    "-",
-    "_",
-    ".",
-    "~",
-].reduce((accl, s) => ({ ...accl, [s.codePointAt(0)]: s }));
+const binaryUrlEncode = (str) => {
+    return str
+      .split("")
+      .map((char, index) => {
+        if (index % 2 === 0) return `%${char}`;
+        return char;
+      })
+      .join("");
+  };
+
 async function peers(path) {
     const i = info(path);
     const u = new URL(i.announce);
@@ -81,9 +20,7 @@ async function peers(path) {
     u.searchParams.set("downloaded", "0");
     u.searchParams.set("left", i.info.length);
     u.searchParams.set("compact", "1");
-    const hash_q = Array.from(Buffer.from(i.infoHash, "hex"))
-        .map((d) => UNRESERVED[d] || "%" + (d <= 0xf ? "0" : "") + d.toString(16))
-        .join("");
+    const hash_q = binaryUrlEncode(i.infoHash);
     const url = u.toString() + `&info_hash=${hash_q}`;
     const response = await fetch(url);
     if (!response.ok) {
