@@ -1,8 +1,7 @@
 const process = require("process");
 const decode = require("./decode");
-const encode = require("./encode");
 const { printTorrentInfo } = require("./torrent");
-const peers = require("./peer");
+const {handshakeCommand,peers} = require("./peer");
 
 
 
@@ -25,12 +24,20 @@ async function main() {
   else if (command === "info") {
     const torrentFile = process.argv[3];
     printTorrentInfo(torrentFile);
-    
+
   }
   else if (command === "peers") {
     const torrentFile = process.argv[3];
     const torrentPeers = await peers(torrentFile);
     console.log(torrentPeers.join("\n"));
+  }
+  else if (command === "handshake") {
+    const fileName = process.argv[3];
+    const peer = {
+      host: process.argv[4].split(":")[0],
+      port: parseInt(process.argv[4].split(":")[1])
+    };
+    handshakeCommand(fileName, peer);
   }
   else {
     throw new Error(`Unknown command ${command}`);

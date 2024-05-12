@@ -3,13 +3,13 @@ const { info } = require("./torrent");
 
 const binaryUrlEncode = (str) => {
     return str
-      .split("")
-      .map((char, index) => {
-        if (index % 2 === 0) return `%${char}`;
-        return char;
-      })
-      .join("");
-  };
+        .split("")
+        .map((char, index) => {
+            if (index % 2 === 0) return `%${char}`;
+            return char;
+        })
+        .join("");
+};
 
 async function peers(path) {
     const i = info(path);
@@ -40,4 +40,70 @@ async function peers(path) {
     return output;
 }
 
-module.exports = peers;
+function handshakeCommand(fileName, peer) {
+    const { infoHash } = info(fileName);
+    doHandshake(peer, encodeHandshake(infoHash))
+        .then((data) => {
+            const { peerId } = decoedeHandShake(data);
+            console.log(`Peer ID: ${peerId}`);
+        });
+}
+
+
+
+const RESERVED_BYTES = Buffer.alloc(8);
+const encodeHandshake = (infoHash) => {
+    const peerId = "00112233445566778899";
+    const protocolString = "BitTorrent protocol";
+    const message = Buffer.concat([
+        Buffer.from([protocolString.length]),
+        Buffer.from(protocolString),
+        RESERVED_BYTES,
+        Buffer.from(infoHash, "hex"),
+        Buffer.from(peerId),
+    ]);
+    return message;
+};
+const decoedeHandShake = (buffer) => {
+    let offset = 0;
+    const protocolLength = buffer[offset];
+    offset += 1;
+    const protocol = buffer.slice(offset, offset + protocolLength).toString();
+    offset += protocolLength;
+    const reserved = buffer.slice(offset, offset + RESERVED_BYTES.length);
+    offset += 8;
+    const infoHash = buffer.slice(offset, offset + 20).toString("hex");
+    offset += 20;
+    const peerId = buffer.slice(offset, offset + 20).toString("hex");
+    return {
+        protocol,
+        reserved,
+        infoHash,
+        peerId,
+    };
+};
+
+
+const doHandshake = (peer, handshake) => {
+    const net = require("net");
+    const { host, port } = peer
+    const client = new net.Socket();
+    return new Promise((resolve, reject) => {
+        client.connect(port, host, () => {
+            client.write(handshake);
+        });
+        client.on("data", (data) => {
+            resolve(data);
+            client.destroy();
+        });
+        client.on("error", (err) => {
+            reject(err);
+        });
+    });
+};
+
+
+module.exports = { peers, handshakeCommand };
+
+
+
