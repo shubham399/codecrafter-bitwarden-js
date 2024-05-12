@@ -35,7 +35,6 @@ function isString(val) {
 }
 function decodeString(bencodedValue) {
     const firstColonIndex = bencodedValue.indexOf(":");
-
     const length = parseInt(bencodedValue.slice(0, firstColonIndex));
     return {
         origin: bencodedValue.substr(0, firstColonIndex + 1 + length),
