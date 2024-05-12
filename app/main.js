@@ -20,7 +20,6 @@ function main() {
     // console.log(torrentInfo.info);
     // console.log(infoEncoded);
 
-    const infoHash = crypto.createHash('sha1').update(infoEncoded).digest('hex');;
     console.log(`Tracker URL: ${trackerUrl}`);
     console.log(`Length: ${fileLength}`);
     console.log(`Info encoded: ${hash}`);
