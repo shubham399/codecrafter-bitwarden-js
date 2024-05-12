@@ -17,9 +17,16 @@ function main() {
     const fileLength = torrentInfo.info.length;
     const tmpBuff = Buffer.from(encode(torrentInfo.info), "binary");
     const hash = calculateSHA1(tmpBuff);
+    const pieceInfo = Buffer.from(torrentInfo.info.pieces, "binary");
+
     console.log(`Tracker URL: ${trackerUrl}`);
     console.log(`Length: ${fileLength}`);
     console.log(`Info Hash: ${hash}`);
+    console.log(`Piece Length: ${torrentInfo.info['piece length']}`)
+    console.log('Piece Hashes:');
+    for (let i = 0; i < pieceInfo.length; i += 20) {
+      console.log(pieceInfo.slice(i, i + 20).toString("hex"));
+    }
   }
 
   // You can use print statements as follows for debugging, they'll be visible when running tests.
