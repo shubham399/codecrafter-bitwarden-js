@@ -8,6 +8,9 @@ function main() {
     const trackerUrl = torrentInfo.announce;
     const fileLength = torrentInfo.info.length;
     const infoEncoded = encode(torrentInfo.info);
+
+    console.debug("🚀  file: main.js:12  printTorrentInfo  infoEncoded:", infoEncoded);
+
     const infoHash = crypto.createHash('sha1').update(infoEncoded).digest('hex');;
     console.log(`Tracker URL: ${trackerUrl}`);
     console.log(`Length: ${fileLength}`);
