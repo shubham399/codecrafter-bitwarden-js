@@ -19,7 +19,7 @@ function main() {
     const hash = calculateSHA1(tmpBuff);
     console.log(`Tracker URL: ${trackerUrl}`);
     console.log(`Length: ${fileLength}`);
-    console.log(`Info encoded: ${hash}`);
+    console.log(`Info Hash: ${hash}`);
   }
 
   // You can use print statements as follows for debugging, they'll be visible when running tests.
